@@ -2,10 +2,13 @@
 
 set -euo pipefail
 
-KUBE_DIR=$HOME/.kube/version-manager
-KUBEBIN=$KUBE_DIR/bin
-KUBEMAN_BIN=$KUBE_DIR/bin/kubeman
-CURRENT_KUBECTL="$KUBE_DIR/current"
+LOCAL_BIN=$HOME/.local/bin
+KUBEMAN_BIN=$LOCAL_BIN/kubeman
+
+KUBEVM_DIR=$HOME/.kube/version-manager
+KUBEVM_BIN=$KUBEVM_DIR/bin
+
+CURRENT_KUBECTL="$KUBEVM_DIR/current"
 
 usage(){
     cat <<"EOF"
@@ -33,9 +36,9 @@ download_kubectl(){
 
     _k8s_version=$1
     OS=`uname -s | awk '{print tolower($0)}'`
-    _curl="curl -sLo $KUBEBIN/kubectl_${_k8s_version} https://storage.googleapis.com/kubernetes-release/release/${_k8s_version}/bin/${OS}/amd64/kubectl"
+    _curl="curl -sLo $KUBEVM_BIN/kubectl_${_k8s_version} https://storage.googleapis.com/kubernetes-release/release/${_k8s_version}/bin/${OS}/amd64/kubectl"
     eval $_curl
-    chmod +x $KUBEBIN/kubectl_$_k8s_version
+    chmod +x $KUBEVM_BIN/kubectl_$_k8s_version
 
 }
 
@@ -52,11 +55,13 @@ switch_kubectl(){
         ln -sf $HOME/.krew/bin/kubectl-version_manager $KUBEMAN_BIN
 
     else
+        mkdir -p $LOCAL_BIN
+
         _k8s_version=`kubectl version --short | awk 'END{if ($1=="Server") print $3}'`
         _k8s_version=${_k8s_version%%-*}
 
         # check existence of kubectl version
-        exist=`find $KUBEBIN -name kubectl_$_k8s_version -type f`
+        exist=`find $KUBEVM_BIN -name kubectl_$_k8s_version -type f`
         if [[ -z "$exist" ]]; then
             # kubectl version not exist, download kubectl version
             download_kubectl $_k8s_version
@@ -72,24 +77,23 @@ activate(){
     RED='\033[0;31m'
     NC='\033[0m'
 
-    if [[ -n `find $KUBEBIN -type l 2>/dev/null` ]];then
+    if [[ -n `find $KUBEMAN_BIN -type l 2>/dev/null` ]];then
         echo ":: Kubeman is already activated ::"
         exit 0
     else
-        mkdir -p $KUBE_DIR
-        mkdir -p $KUBEBIN
+        mkdir -p $KUBEVM_DIR $KUBEVM_BIN
         switch_kubectl
 
         printf ":: Kubeman is activated ::\n\n"
         printf "${RED}WARNING${NC}: To be able to run kubeman CLI, you need to add\n"
         printf "the following to your "
         if [[ $SHELL == /usr/bin/zsh ]];then
-            printf "$HOME/.zshrc:\n\n"
+            printf "\$HOME/.zshrc:\n\n"
         elif [[ $SHELL == /usr/bin/bash ]];then
-            printf "$HOME/.bashrc:\n\n"
+            printf "\$HOME/.bashrc:\n\n"
         fi
         printf "Add the kubeman CLI to your path with:\n\n"
-        printf "    export PATH=\"\$PATH:\$HOME/.kube/version-manager/bin\"\n\n"
+        printf "    export PATH=\"\$PATH:\$HOME/.local/bin\"\n\n"
         printf "and restart your shell.\n\n"
     fi
 }
@@ -108,8 +112,8 @@ main(){
     if [[ "`basename $0`" == "kubectl" || "`basename $0`" == "kubeman" ]];then
 
         switch_kubectl
-        $KUBEBIN/`cat $CURRENT_KUBECTL` "$@"
-        # $KUBEBIN/`cat $CURRENT_KUBECTL` "$@" | sed -e "s/kubectl/kubeman/g"
+        $KUBEVM_BIN/`cat $CURRENT_KUBECTL` "$@"
+        # $KUBEVM_BIN/`cat $CURRENT_KUBECTL` "$@" | sed -e "s/kubectl/kubeman/g"
 
     elif [[ "`basename $0`" == "kubectl-version_manager" ]];then
         if [[ "$#" -eq 0 ]];then
