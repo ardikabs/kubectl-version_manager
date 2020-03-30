@@ -45,18 +45,17 @@ download_kubectl(){
 switch_kubectl(){
     local _k8s_version
 
-    if [[ -n `which kubetl` ]]; then
+    if [[ ! -n `which kubectl` ]]; then
         echo "error: No kubectl binary was found"
         exit 1
     elif [[ -z $(find $KUBEMAN_BIN -type l 2>/dev/null) ]]; then
         _k8s_version=`kubectl version --client --short | awk 'END{if ($1=="Client") print $3}'`
         echo "kubectl_$_k8s_version" > $CURRENT_KUBECTL
 
+        mkdir -p $LOCAL_BIN
         ln -sf $HOME/.krew/bin/kubectl-version_manager $KUBEMAN_BIN
 
     else
-        mkdir -p $LOCAL_BIN
-
         _k8s_version=`kubectl version --short | awk 'END{if ($1=="Server") print $3}'`
         _k8s_version=${_k8s_version%%-*}
 
