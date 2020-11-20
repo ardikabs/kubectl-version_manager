@@ -3,15 +3,14 @@ A kubectl plugin for automate synchronize version between kubectl and kubernetes
 
 ## Installation
 #### Prerequisites
-* You **MUST** install `kubectl krew` from [here](https://krew.sigs.k8s.io/docs/user-guide/setup/install/).
-* Then installing `kubectl-version_manager` plugin.
+* Clone this repository
+* Move `kubectl_version-manager` to `/usr/local/bin`
 
-    ```shell
-    # Get from source
+    ```bash
     $ git clone https://github.com/ardikabs/kubectl-version_manager.git
-    $ cd kubectl-version_manager
-    $ chmod +x kubectl-version_manager
-    $ sudo cp -p kubectl-version_manager $HOME/.krew/bin
+    $ chmod +x kubectl-version_manager/kubectl-version_manager
+    $ sudo mv kubectl-version_manager/kubectl-version_manager /usr/local/bin
+    $ kubectl version-manager --help
     ```
 
 ## Usage
