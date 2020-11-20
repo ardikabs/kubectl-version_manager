@@ -1,4 +1,4 @@
-# [kubeman] kubectl-version_manager
+# kubectl-version_manager
 A kubectl plugin for automate synchronize version between kubectl and kubernetes server version
 
 ## Installation
