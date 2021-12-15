@@ -35,7 +35,6 @@ err() {
 }
 
 download_kubectl(){
-    local OS
     local _k8s_version
 
     if [[ -z $1 ]]; then
